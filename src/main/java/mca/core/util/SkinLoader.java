@@ -9,6 +9,7 @@ package mca.core.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -72,7 +73,7 @@ public final class SkinLoader
 		}
 	}
 
-	private static File findModDataFile() throws ZipException, IOException
+	private static File findModDataFile() throws IOException
 	{
 		File modData = findModAsArchive();
 
@@ -89,27 +90,40 @@ public final class SkinLoader
 		return modData;
 	}
 
-	private static File findModAsArchive() throws ZipException, IOException
+	private static File findModAsArchive() throws IOException
 	{
 		final File modsFolder = new File(RadixCore.getInstance().runningDirectory + "/mods");
 
 		for (final File fileInMods : modsFolder.listFiles())
 		{
-			if (fileInMods.isFile() && fileInMods.getName().contains(".zip"))
+			if (fileInMods.isFile())
 			{
-				if (fileContainsModData(fileInMods))
+				String filetype = Files.probeContentType(fileInMods.toPath());
+				if (filetype.equals("application/zip") || filetype.equals("application/x-java-archive"))
 				{
-					return fileInMods;
+					if (fileContainsModData(fileInMods))
+					{
+						return fileInMods;
+					}
 				}
-			}
-
-			else if (fileInMods.isDirectory())
-			{
-				final File modData = getModFileFromNestedFolder(fileInMods);
-
-				if (modData != null)
+				else if (fileInMods.isDirectory())
 				{
-					return modData;
+					final File modData = getModFileFromNestedFolder
+							(fileInMods);
+
+					if (modData != null)
+					{
+						return modData;
+					}
+				}
+				else if (fileInMods.isDirectory())
+				{
+					final File modData = getModFileFromNestedFolder(fileInMods);
+
+					if (modData != null)
+					{
+						return modData;
+					}
 				}
 			}
 		}
@@ -145,7 +159,7 @@ public final class SkinLoader
 		return null;
 	}
 
-	private static void loadSkinsFromFile(File modDataFile) throws ZipException, IOException
+	private static void loadSkinsFromFile(File modDataFile) throws IOException
 	{
 		final ZipFile modArchive = new ZipFile(modDataFile);
 		final Enumeration enumerator = modArchive.entries();
@@ -233,7 +247,7 @@ public final class SkinLoader
 		}
 	}
 
-	private static void loadAddonSkinsFromFile(File addonDataFile) throws ZipException, IOException
+	private static void loadAddonSkinsFromFile(File addonDataFile) throws IOException
 	{
 		final ZipFile modArchive = new ZipFile(addonDataFile);
 		final Enumeration enumerator = modArchive.entries();
@@ -311,7 +325,8 @@ public final class SkinLoader
 
 	private static boolean fileContainsModData(File fileToTest) throws IOException
 	{
-		if (fileToTest.getName().contains(".zip"))
+		String filetype = Files.probeContentType(fileToTest.toPath());
+		if (filetype.equals("application/zip") || filetype.equals("application/x-java-archive"))
 		{
 			try
 			{
@@ -345,7 +360,8 @@ public final class SkinLoader
 
 	private static boolean fileContainsAddonData(File fileToTest) throws IOException
 	{
-		if (fileToTest.getName().contains(".zip") || fileToTest.getName().contains(".jar"))
+		String filetype = Files.probeContentType(fileToTest.toPath());
+		if (filetype.equals("application/zip") || filetype.equals("application/x-java-archive"))
 		{
 			try
 			{
