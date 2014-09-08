@@ -101,15 +101,13 @@ public final class SkinLoader
 				String filetype = Files.probeContentType(fileInMods.toPath());
 				if (filetype.equals("application/zip") || filetype.equals("application/x-java-archive"))
 				{
-					if (fileContainsModData(fileInMods))
 					{
 						return fileInMods;
 					}
 				}
 				else if (fileInMods.isDirectory())
 				{
-					final File modData = getModFileFromNestedFolder
-							(fileInMods);
+					final File modData = getModFileFromNestedFolder(fileInMods);
 
 					if (modData != null)
 					{
@@ -359,6 +357,7 @@ public final class SkinLoader
 	}
 
 	private static boolean fileContainsAddonData(File fileToTest) throws IOException
+
 	{
 		String filetype = Files.probeContentType(fileToTest.toPath());
 		if (filetype.equals("application/zip") || filetype.equals("application/x-java-archive"))
